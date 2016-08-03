@@ -7,10 +7,18 @@ module Game =
     let cellAvailable world row column =
         row >= 0 && row < (Array2D.length1 world) && column >= 0 && column < (Array2D.length2 world)
 
+        
     let neighbours (world : bool[,]) row column =
         let rows = [row - 1; row; row + 1]
         let columns = [column - 1; column; column + 1]
-        [for neighbourRow in rows do for neighbourColumn in columns do yield if (neighbourRow <> row || neighbourColumn <> column) then  world.[neighbourRow, neighbourColumn] else false]
+
+        [for neighbourRow in rows do
+            for neighbourColumn in columns do
+                yield if ((neighbourRow <> row && neighbourRow >= 0 && neighbourRow < Array2D.length1 world) &&
+                          (neighbourColumn <> column && neighbourColumn >= 0 && neighbourColumn < Array2D.length2 world))
+                      then world.[neighbourRow, neighbourColumn]
+                      else false]
+
 
     let liveNeighbours world row column =
         (List.filter (fun a -> a = true) (neighbours world row column)).Length
