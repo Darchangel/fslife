@@ -1,6 +1,8 @@
 namespace Life
 
 module Game =
+    open System
+
     let anyLiving world =
         world |> Seq.cast<bool> |> Seq.filter (fun x -> x) |> Seq.length > 0
 
@@ -36,17 +38,35 @@ module Game =
     let nextGen world =
         Array2D.init (Array2D.length1 world) (Array2D.length2 world) (fun row column -> nextGenCell world row column)
 
+    let print world =
+        Array2D.init (Array2D.length1 world) (Array2D.length2 world) (fun row column -> if world.[row, column] = true then "O" else " ")
 
+    let compare world1 world2 =
+        let flatWorld1 = world1 |> Seq.cast<bool>
+        let flatWorld2 = world2 |> Seq.cast<bool>
+
+        (Seq.compareWith (fun a b -> if a = b then 0 else 1) flatWorld1 flatWorld2) = 0
+    
     let rec gameLoop world gen =
+        Console.Clear()
         printfn "Generation %d:" gen
-        printfn "%A" world
+        printfn "%A" (print world)
 
         if not (anyLiving world) then
-            printfn "All ya critters died :'("
+            printfn ""
+            printfn "Unfortunately, your whole civilization died..."
         else
             System.Threading.Thread.Sleep 500
-            gameLoop (nextGen world) (gen + 1)
+            let nextWorld = (nextGen world)
+
+            if compare world nextWorld then
+                printfn ""
+                printfn "Congratulations, your civilization stabilized!"
+            else
+                gameLoop nextWorld (gen + 1)
         
     let start world =
         gameLoop world 1
+        printfn "(press any key to exit)"
+        Console.ReadKey() |> ignore
 
